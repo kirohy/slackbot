@@ -1,7 +1,12 @@
 import os
+from os.path import join, dirname
+from dotenv import load_dotenv
 
-API_TOKEN = os.environ.get('SLACK_API_KEY', '')
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
-DEFAULT_REPLY = "わかんない"
+API_TOKEN = os.environ.get('API_TOKEN')
+
+DEFAULT_REPLY = 'わかんない'
 
 PLUGINS = ['plugins']
