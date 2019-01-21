@@ -1,4 +1,6 @@
-API_TOKEN = "xoxb-413714064146-527666995649-CkBHJworNGVURTIVMYh7zGnh"
+import os
+
+API_TOKEN = os.environ.get('SLACK_API_KEY', '')
 
 DEFAULT_REPLY = "わかんない"
 
