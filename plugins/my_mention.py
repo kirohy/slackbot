@@ -1,6 +1,7 @@
 from slackbot.bot import respond_to
 from slackbot.bot import listen_to
 from slackbot.bot import default_reply
+import os.path
 import slackbot_settings
 import datetime
 import cv2 as cv
@@ -17,15 +18,17 @@ def picture(message):
     cap.set(4,120)
 
     ref, img = cap.read()
-    date = datetime.datetime.now()
-    filename = date.strftime('./pictures/%Y-%m-%d-%H:%M:%S.jpg')
 
-    cv.imwrite(filename, img)
+    date = datetime.datetime.now()
+    filename = date.strftime('%Y-%m-%d-%H:%M:%S.jpg')
+    path = os.path.join('../Pictures', filename)
+
+    cv.imwrite(path, img)
 
     cap.release()
     cv.destroyAllWindows()
 
-    files = {'file': open(filename, 'rb')}
+    files = {'file': open(path, 'rb')}
     param = {
         'token': slackbot_settings.API_TOKEN,
         'channels': slackbot_settings.CHANNEL_ID,
@@ -37,6 +40,6 @@ def picture(message):
 
 
 
-@listen_to('Robotech')
+@listen_to('おーい')
 def listen_func(message):
-    message.send('RoboTech')
+    message.send('呼んだ？')
