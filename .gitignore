@@ -1,3 +1,4 @@
 .*.un~
 *.pyc
 .env
+.python-version
