@@ -1,11 +1,6 @@
-import datetime
-import os.path
-
-import cv2 as cv
-import requests
 from slackbot.bot import listen_to, respond_to
 
-import slackbot_settings
+import slackbot_settings as ss
 
 
 @respond_to("うるせえ")
@@ -15,6 +10,11 @@ def mention_func(message):
 
 @respond_to("写真")
 def picture(message):
+    import cv2 as cv
+    import requests
+    import datetime
+    import os.path
+
     cap = cv.VideoCapture(0)
     cap.set(3, 160)
     cap.set(4, 120)
@@ -33,8 +33,8 @@ def picture(message):
     upload = "https://slack.com/api/files.upload"
     file = {"file": open(path, "rb")}
     param = {
-        "token": slackbot_settings.API_TOKEN,
-        "channels": slackbot_settings.CHANNEL_ID,
+        "token": ss.API_TOKEN,
+        "channels": ss.CHANNEL_ID,
         "filename": filename,
         "initial_comment": "写真を撮影しました",
         "title": filename,
@@ -57,7 +57,24 @@ def weather(message):
     description_min = "最低気温は " + min + "℃" + "\n"
     description_max = "最高気温は " + max + "℃" + "\n"
 
-    message.reply(description_min + description_max + "\n" + text)
+    message.reply("\n" + description_min + description_max + "\n" + text)
+
+
+@respond_to("ダウンロード")
+def download_file(message):
+    from libs.download import DownloadFile
+
+    file_types = ["jpg", "png", "pdf", "zip"]
+    save_path = "../Downloads/"
+
+    download_file = DownloadFile(file_types, save_path)
+    result = download_file.exe_download(message._body["files"][0])
+    if result == "ok":
+        message.send("ファイルをダウンロードしました")
+    elif result == "file type is not applicable.":
+        message.send("ファイルのタイプがダウンロード対象外です")
+    else:
+        message.send("ファイルのダウンロードに失敗しました")
 
 
 @listen_to("おーい")
