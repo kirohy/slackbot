@@ -5,7 +5,7 @@ import slackbot_settings as ss
 
 @respond_to("うるせえ")
 def mention_func(message):
-    message.reply("だまれ")
+    message.reply("そんなこと言わないで……")
 
 
 @respond_to("写真")
@@ -51,13 +51,22 @@ def weather(message):
     response = urllib.request.urlopen(url)
     jsonfile = json.loads(response.read().decode("utf-8"))
     text = jsonfile["description"]["text"]
-    min = jsonfile["forecasts"][0]["temperature"]["min"]["celsius"]
-    max = jsonfile["forecasts"][0]["temperature"]["max"]["celsius"]
+
+    if jsonfile["forecasts"][0]["temperature"]["min"] is not None:
+        min = jsonfile["forecasts"][0]["temperature"]["min"]["celsius"]
+    else:
+        min = "null"
+
+    if jsonfile["forecasts"][0]["temperature"]["max"] is not None:
+        max = jsonfile["forecasts"][0]["temperature"]["max"]["celsius"]
+    else:
+        max = "null"
 
     description_min = "最低気温は " + min + "℃" + "\n"
     description_max = "最高気温は " + max + "℃" + "\n"
 
-    message.reply("\n" + description_min + description_max + "\n" + text)
+    message.send("今日の天気予報です")
+    message.send("\n" + description_min + description_max + "\n" + text)
 
 
 @respond_to("ダウンロード")
@@ -75,6 +84,56 @@ def download_file(message):
         message.send("ファイルのタイプがダウンロード対象外です")
     else:
         message.send("ファイルのダウンロードに失敗しました")
+
+
+@respond_to(r"^light\s+\S.*")
+def light_switch(message):
+    import subprocess
+    import shlex
+
+    text = message.body["text"]
+    temp, word = text.split(None, 1)
+
+    cmd = "python3 ../irrp.py -p -g17 -f ../codes"
+    token = shlex.split(cmd)
+
+    if word == "on":
+        token.append("light:on")
+        subprocess.run(token)
+        message.send("部屋の電気をつけました")
+    elif word == "off":
+        token.append("light:off")
+        subprocess.run(token)
+        message.send("部屋の電気を消しました")
+    else:
+        message.send("```usage: light [on, off]```")
+
+
+@respond_to(r"^air\s+\S.*")
+def air_conditioner(message):
+    import subprocess
+    import shlex
+
+    text = message.body["text"]
+    temp, word = text.split(None, 1)
+
+    cmd = "python3 ../irrp.py -p -g17 -f ../codes"
+    token = shlex.split(cmd)
+
+    if word == "heat":
+        token.append("heat")
+        subprocess.run(token)
+        message.send("暖房をつけました")
+    elif word == "cool":
+        token.append("cool")
+        subprocess.run(token)
+        message.send("冷房をつけました")
+    elif word == "stop":
+        token.append("stop")
+        subprocess.run(token)
+        message.send("エアコンを切りました")
+    else:
+        message.send("```usage: air [heat, cool, stop]```")
 
 
 @listen_to("おーい")
