@@ -8,27 +8,22 @@ def mention_func(message):
     message.reply("そんなこと言わないで……")
 
 
-@respond_to("写真")
+@listen_to("写真")
 def picture(message):
-    import cv2 as cv
     import requests
     import datetime
     import os.path
-
-    cap = cv.VideoCapture(0)
-    cap.set(3, 160)
-    cap.set(4, 120)
-
-    ref, img = cap.read()
+    import shlex
+    import subprocess
 
     date = datetime.datetime.now()
     filename = date.strftime("%Y-%m-%d-%H:%M:%S.jpg")
     path = os.path.join("../Pictures", filename)
 
-    cv.imwrite(path, img)
-
-    cap.release()
-    cv.destroyAllWindows()
+    base_cmd = "fswebcam -r 1280x720"
+    cmd = shlex.split(base_cmd)
+    cmd.append(path)
+    subprocess.run(cmd)
 
     upload = "https://slack.com/api/files.upload"
     file = {"file": open(path, "rb")}
@@ -42,7 +37,7 @@ def picture(message):
     requests.post(url=upload, params=param, files=file)
 
 
-@respond_to("天気")
+@listen_to("天気")
 def weather(message):
     import json
     import urllib.response
@@ -69,7 +64,7 @@ def weather(message):
     message.send("\n" + description_min + description_max + "\n" + text)
 
 
-@respond_to("ダウンロード")
+@listen_to("ダウンロード")
 def download_file(message):
     from libs.download import DownloadFile
 
@@ -86,7 +81,7 @@ def download_file(message):
         message.send("ファイルのダウンロードに失敗しました")
 
 
-@respond_to(r"^light\s+\S.*")
+@listen_to(r"^light\s+\S.*")
 def light_switch(message):
     import subprocess
     import shlex
@@ -109,7 +104,7 @@ def light_switch(message):
         message.send("```usage: light [on, off]```")
 
 
-@respond_to(r"^air\s+\S.*")
+@listen_to(r"^air\s+\S.*")
 def air_conditioner(message):
     import subprocess
     import shlex
