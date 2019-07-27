@@ -31,7 +31,7 @@ def picture(message):
         "token": ss.API_TOKEN,
         "channels": ss.CHANNEL_ID,
         "filename": filename,
-        "initial_comment": "写真を撮影しました",
+        "initial_comment": "Successed to take a picture.",
         "title": filename,
     }
     requests.post(url=upload, params=param, files=file)
@@ -64,21 +64,68 @@ def weather(message):
     message.send("\n" + description_min + description_max + "\n" + text)
 
 
-@listen_to("ダウンロード")
+@listen_to(r"^down\s+\S.*")
 def download_file(message):
     from libs.download import DownloadFile
+    import shlex
 
+    text = message.body["text"]
+    temp, file_path = text.split(None, 1)
     file_types = ["jpg", "png", "pdf", "zip"]
-    save_path = "../Downloads/"
+    save_path = file_path
 
     download_file = DownloadFile(file_types, save_path)
     result = download_file.exe_download(message._body["files"][0])
     if result == "ok":
-        message.send("ファイルをダウンロードしました")
+        message.send("Successed to download a file.")
     elif result == "file type is not applicable.":
-        message.send("ファイルのタイプがダウンロード対象外です")
+        message.send("Error: Invalid filetype")
     else:
-        message.send("ファイルのダウンロードに失敗しました")
+        message.send("Failed to download a file.")
+
+
+@listen_to(r"^up\s+\S.*")
+def upload_file(message):
+    import os
+    import requests
+    import shlex
+
+    os.chdir(os.path.abspath(os.path.expanduser("~/mnt/")))
+
+    text = message.body["text"]
+    temp, file_path = text.split(None, 1)
+
+    upload = "https://slack.com/api/files.upload"
+    file = {"file": open(file_path, "rb")}
+    param = {
+        "token": ss.API_TOKEN,
+        "channels": ss.CHANNEL_ID,
+        "initial_comment": "Successed to upload a file.",
+    }
+    requests.post(url=upload, params=param, files=file)
+
+    os.chdir(os.path.abspath(os.path.expanduser("~/slackbot/")))
+
+
+@listen_to(r"^cd\s+\S.*")
+def shell(message):
+    import os
+    import subprocess
+    import shlex
+
+    os.chdir(os.path.abspath(os.path.expanduser("~/mnt/")))
+
+    text = message.body["text"]
+    temp, path = text.split(None, 1)
+
+    os.chdir(os.path.abspath(path))
+    current = os.getcwd()
+    result = subprocess.check_output("ls")
+
+    message.send(current)
+    message.send(result)
+
+    os.chdir(os.path.abspath(os.path.expanduser("~/slackbot/")))
 
 
 @listen_to(r"^light\s+\S.*")
